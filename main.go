@@ -38,87 +38,39 @@ func main() {
 	}
 	defer session.Close()
 
-	// Initialize dependencies
+	// Initialize dependencies (products)
 
 	productRepo := repository.NewProductRepository(ctx, session)
 	productService := service.NewProductService(productRepo)
 	productHander := transport.NewProductHandler(productService)
 
+	// Initialize dependencies (categories)
+
+	categoryRepo := repository.NewCategoryRepository(ctx, session)
+	categoryService := service.NewCategoryService(categoryRepo)
+	categoryHandler := transport.NewCategoryHandler(categoryService)
+
 	// Initialize router
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 
-	// Define routes
+	// Define routes (products)
 	router.Get("/products", productHander.GetProducts)
 	router.Get("/products/{id}", productHander.GetProduct)
 	router.Post("/products", productHander.CreateProduct)
 	router.Patch("/products/{id}", productHander.UpdateProduct)
 	router.Delete("/products/{id}", productHander.DeleteProduct)
 
+	// Define routes (categories)
+
+	router.Get("/categories", categoryHandler.GetCategories)
+	router.Get("/categories/{id}", categoryHandler.GetCategory)
+	router.Post("/categories", categoryHandler.CreateCategory)
+	router.Patch("/categories/{id}", categoryHandler.UpdateCategory)
+	router.Delete("/categories/{id}", categoryHandler.DeleteCategory)
+
 	// Start the server
 	log.Println("Server started on :3000 😂")
 	log.Fatal(http.ListenAndServe(":3000", router))
 
 }
-
-// func getProduct(w http.ResponseWriter, r *http.Request) {
-// 	id := chi.URLParam(r, "id")
-// 	var product model.Product
-// 	if err := session.Query(`SELECT _ FROM products WHERE product_id = ?`, id).Scan(&product.ID, &product.Name, &product.Description, &product.Price, &product.Quantity); err != nil {
-// 		w.WriteHeader(http.StatusNotFound)
-// 		return
-// 	}
-// 	json.NewEncoder(w).Encode(product)
-// }
-
-// func createProduct(w http.ResponseWriter, r *http.Request) {
-// 	var product model.Product
-// 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		return
-// 	}
-// 	defer r.Body.Close()
-
-// 	if err := session.Query(`INSERT INTO products (product_id, name, description, price, quantity) VALUES (?, ?, ?, ?, ?)`,
-// 		gocql.TimeUUID(),
-// 		product.Name,
-// 		product.Description,
-// 		product.Price,
-// 		product.Quantity).Exec(); err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-// 	w.WriteHeader(http.StatusCreated)
-
-// }
-
-// func updateProduct(w http.ResponseWriter, r *http.Request) {
-// 	id := chi.URLParam(r, "id")
-// 	var product model.Product
-// 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 		return
-// 	}
-// 	defer r.Body.Close()
-
-// 	if err := session.Query(`UPDATE products SET name = ?, description = ?, price = ?, quantity = ? WHERE product_id = ?`,
-// 		product.Name,
-// 		product.Description,
-// 		product.Price,
-// 		product.Quantity,
-// 		id).Exec(); err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-// 	w.WriteHeader(http.StatusOK)
-
-// }
-
-// func deleteProduct(w http.ResponseWriter, r *http.Request) {
-// 	id := chi.URLParam(r, "id")
-// 	if err := session.Query(`DELETE FROM products WHERE product_id = ?`, id).Exec(); err != nil {
-// 		w.WriteHeader(http.StatusInternalServerError)
-// 		return
-// 	}
-// 	w.WriteHeader(http.StatusOK)
-// }
