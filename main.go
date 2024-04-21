@@ -48,7 +48,14 @@ func main() {
 
 	categoryRepo := repository.NewCategoryRepository(ctx, session)
 	categoryService := service.NewCategoryService(categoryRepo)
+
 	categoryHandler := transport.NewCategoryHandler(categoryService)
+
+	// initialize dependencies (orders)
+
+	orderRepo := repository.NewOrderRepository(ctx, session)
+	orderService := service.NewOrderService(orderRepo)
+	orderHandler := transport.NewOrderHandler(orderService)
 
 	// Initialize router
 	router := chi.NewRouter()
@@ -68,6 +75,14 @@ func main() {
 	router.Post("/categories", categoryHandler.CreateCategory)
 	router.Patch("/categories/{id}", categoryHandler.UpdateCategory)
 	router.Delete("/categories/{id}", categoryHandler.DeleteCategory)
+
+	// define routes (orders)
+
+	router.Get("/orders", orderHandler.GetOrders)
+	router.Get("/orders/{id}", orderHandler.GetOrder)
+	router.Post("/orders", orderHandler.CreateOrder)
+	router.Patch("/orders/{id}", orderHandler.UpdateOrder)
+	router.Delete("/orders/{id}", orderHandler.DeleteOrder)
 
 	// Start the server
 	log.Println("Server started on :3000 😂")
