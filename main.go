@@ -63,6 +63,11 @@ func main() {
 	reviewService := service.NewReviewService(reviewRepo)
 	reviewHandler := transport.NewReviewHandler(reviewService)
 
+	// initialize dependencies (customers)
+	customerRepo := repository.NewCustomerRepository(ctx, session)
+	customerService := service.NewCustomerService(customerRepo)
+	customerHandler := transport.NewCustomerHandler(customerService)
+
 	// Initialize router
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
@@ -96,6 +101,14 @@ func main() {
 	router.Post("/reviews", reviewHandler.CreateReview)
 	router.Patch("/reviews/{id}", reviewHandler.UpdateReview)
 	router.Delete("/reviews/{id}", reviewHandler.DeleteReview)
+
+	// define routes customer
+
+	router.Get("/customers", customerHandler.GetCustomers)
+	router.Get("/customers/{id}", customerHandler.GetCustomer)
+	router.Post("/customers", customerHandler.CreateCustomer)
+	router.Patch("/customers/{id}", customerHandler.UpdateCustomer)
+	router.Delete("/customers/{id}", customerHandler.DeleteCustomer)
 
 	// Start the server
 	log.Println("Server started on :3000 😂")
